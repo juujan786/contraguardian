@@ -12,14 +12,37 @@ const Home = () => {
   const navigate = useNavigate();
   const [scope, animate] = useAnimate();
 
+  let fileHistory = localStorage.getItem("fileHistory")
+    ? JSON.parse(localStorage.getItem("fileHistory"))
+    : [];
+
   const handleUploadCardClick = () => {
     fileInputRef.current.click();
   };
 
   const handleFileChange = (e) => {
     const file = fileInputRef.current.value;
-    setSelectedFile(file);
-    navigate("analyze", { state: { selectedFile: file } });
+    let fileParts = file.split("\\");
+
+    const fileName = fileParts[fileParts.length - 1];
+
+    const allowedExtensions = [".pdf"];
+
+    if (file) {
+      const fileNameParts = fileName.split(".");
+      const fileExtension = `.${
+        fileNameParts[fileNameParts.length - 1]
+      }`.toLowerCase();
+
+      if (allowedExtensions.includes(fileExtension)) {
+        setSelectedFile(fileName);
+        fileHistory.splice(0, 0, fileName);
+        localStorage.setItem("fileHistory", JSON.stringify(fileHistory));
+        navigate("analyze", { state: { selectedFile: fileName } });
+      } else {
+        alert("Only pdf files are allowed!");
+      }
+    }
   };
 
   return (

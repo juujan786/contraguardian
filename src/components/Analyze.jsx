@@ -8,14 +8,36 @@ const Analyze = () => {
     location.state?.selectedFile
   );
 
+  let fileHistory = localStorage.getItem("fileHistory")
+    ? JSON.parse(localStorage.getItem("fileHistory"))
+    : [];
+
   const handleUploadCardClick = () => {
     fileInputRef.current.click();
   };
 
   const handleFileChange = (e) => {
     const file = fileInputRef.current.value;
-    setSelectedFile(file);
-    console.log("Selected file:", file);
+    let fileParts = file.split("\\");
+
+    const fileName = fileParts[fileParts.length - 1];
+
+    const allowedExtensions = [".pdf"];
+
+    if (file) {
+      const fileNameParts = fileName.split(".");
+      const fileExtension = `.${
+        fileNameParts[fileNameParts.length - 1]
+      }`.toLowerCase();
+
+      if (allowedExtensions.includes(fileExtension)) {
+        setSelectedFile(fileName);
+        fileHistory.splice(0, 0, fileName);
+        localStorage.setItem("fileHistory", JSON.stringify(fileHistory));
+      } else {
+        alert("Only pdf files are allowed!");
+      }
+    }
   };
 
   return (
@@ -24,7 +46,7 @@ const Analyze = () => {
         <div className="leftSect mb-8">
           <p className="text-[#6b21e5] font-semibold">
             <span className="font-bold text-[#6b21e5]">Current Files:</span>{" "}
-            {selectedFile}
+            {fileHistory[0]}
           </p>
           <div
             onClick={handleUploadCardClick}
@@ -41,9 +63,13 @@ const Analyze = () => {
           </div>
           <div className="hidden md:block">
             <h2 className="mt-5 font-bold text-[#6b21e5]">File history</h2>
-            <p className="font-semibold text-[#6b21e5]">sample.pdf</p>
-            <p className="font-semibold text-[#6b21e5]">sample.pdf</p>
-            <p className="font-semibold text-[#6b21e5]">sample.pdf</p>
+            {fileHistory.length === 0 ? (
+              <p className="font-semibold text-[#6b21e5]">No files</p>
+            ) : (
+              fileHistory.map((file) => (
+                <p className="font-semibold text-[#6b21e5]">{file}</p>
+              ))
+            )}
           </div>
         </div>
         <div className="right">
