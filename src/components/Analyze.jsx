@@ -4,40 +4,59 @@ import { useLocation } from "react-router-dom";
 const Analyze = () => {
   const location = useLocation();
   const fileInputRef = useRef();
-  const [selectedFile, setSelectedFile] = useState(
-    location.state?.selectedFile
-  );
 
   let fileHistory = localStorage.getItem("fileHistory")
     ? JSON.parse(localStorage.getItem("fileHistory"))
     : [];
+
+  const fileName = location.state?.selectedFile.name;
+  const [selectedFile, setSelectedFile] = useState({
+    name: fileName,
+    red: `${fileName}'s red content`,
+    orange: `${fileName}'s orange content`,
+    green: `${fileName}'s green content`,
+  });
+
+  // const doesFileAreadyExist = fileHistory.find(
+  //   (file) => file.name === selectedFile.name
+  // );
+
+  // if (!doesFileAreadyExist) {
+  //   fileHistory.unshift(selectedFile);
+  //   localStorage.setItem("fileHistory", JSON.stringify(fileHistory));
+  // }
 
   const handleUploadCardClick = () => {
     fileInputRef.current.click();
   };
 
   const handleFileChange = (e) => {
-    const file = fileInputRef.current.value;
-    let fileParts = file.split("\\");
-
-    const fileName = fileParts[fileParts.length - 1];
-
+    e.preventDefault();
+    const file = e.target.files[0];
     const allowedExtensions = [".pdf"];
-
     if (file) {
-      const fileNameParts = fileName.split(".");
+      const fileNameParts = file.name.split(".");
       const fileExtension = `.${
         fileNameParts[fileNameParts.length - 1]
       }`.toLowerCase();
-
       if (allowedExtensions.includes(fileExtension)) {
-        setSelectedFile(fileName);
-        fileHistory.splice(0, 0, fileName);
+        setSelectedFile({
+          name: file.name,
+          red: `${file.name}'s red content.`,
+          orange: `${file.name}'s orange content.`,
+          green: `${file.name}'s green content.`,
+        });
+        fileHistory.unshift(selectedFile);
         localStorage.setItem("fileHistory", JSON.stringify(fileHistory));
       } else {
         alert("Only pdf files are allowed!");
       }
     }
+  };
+
+  const handleHistoryClick = (fileName) => {
+    const file = fileHistory.find((f) => f.name === fileName);
+    setSelectedFile(file);
   };
 
   return (
@@ -46,7 +65,7 @@ const Analyze = () => {
         <div className="leftSect mb-8">
           <p className="text-[#6b21e5] font-semibold">
             <span className="font-bold text-[#6b21e5]">Current Files:</span>{" "}
-            {fileHistory[0]}
+            {selectedFile && selectedFile.name}
           </p>
           <div
             onClick={handleUploadCardClick}
@@ -64,10 +83,15 @@ const Analyze = () => {
           <div className="hidden md:block">
             <h2 className="mt-5 font-bold text-[#6b21e5]">File history</h2>
             {fileHistory.length === 0 ? (
-              <p className="font-semibold text-[#6b21e5]">No files</p>
+              <p className="font-semibold text-[#6b21e5]">Enpty</p>
             ) : (
               fileHistory.map((file) => (
-                <p className="font-semibold text-[#6b21e5]">{file}</p>
+                <p
+                  onClick={(e) => handleHistoryClick(file.name)}
+                  className="font-semibold text-[#6b21e5] cursor-pointer mb-2"
+                >
+                  {file.name ? file.name : ""}
+                </p>
               ))
             )}
           </div>
@@ -102,12 +126,14 @@ const Analyze = () => {
                   </div>
                   <div class="max-h-0 overflow-hidden transition-all duration-500 peer-checked:max-h-96">
                     <div class="px-5 pb-2">
-                      <p class="text-sm">Red flegs content</p>
+                      <p class="text-sm">
+                        {selectedFile ? selectedFile.name : ""}'s red flag
+                        content.
+                      </p>
                     </div>
                   </div>
                 </label>
               </li>
-
               <li class="text-left bg-orange-300">
                 <label
                   for="accordion-3"
@@ -136,15 +162,13 @@ const Analyze = () => {
                   <div class="max-h-0 overflow-hidden transition-all duration-500 peer-checked:max-h-96">
                     <div class="px-5 pb-2">
                       <p class="text-sm">
-                        Lorem ipsum, <b>dolor sit amet</b> consectetur
-                        adipisicing elit. Adipisci eligendi, recusandae
-                        voluptatum distinctio
+                        {selectedFile ? selectedFile.name : ""}'s orange flag
+                        content.
                       </p>
                     </div>
                   </div>
                 </label>
               </li>
-
               <li class="text-left bg-green-300">
                 <label
                   for="accordion-4"
@@ -173,9 +197,8 @@ const Analyze = () => {
                   <div class="max-h-0 overflow-hidden transition-all duration-500 peer-checked:max-h-96">
                     <div class="px-5 pb-2">
                       <p class="text-sm">
-                        Lorem ipsum, <b>dolor sit amet</b> consectetur
-                        adipisicing elit. Adipisci eligendi, recusandae
-                        voluptatum distinctio
+                        {selectedFile ? selectedFile.name : ""}'s green flag
+                        content.
                       </p>
                     </div>
                   </div>

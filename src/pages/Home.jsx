@@ -20,25 +20,36 @@ const Home = () => {
     fileInputRef.current.click();
   };
 
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    handleUploadedFile(file);
+  };
+
   const handleFileChange = (e) => {
-    const file = fileInputRef.current.value;
-    let fileParts = file.split("\\");
+    const file = e.target.files[0];
+    handleUploadedFile(file);
+  };
 
-    const fileName = fileParts[fileParts.length - 1];
-
+  const handleUploadedFile = (file) => {
     const allowedExtensions = [".pdf"];
 
     if (file) {
+      const fileName = file.name;
       const fileNameParts = fileName.split(".");
       const fileExtension = `.${
         fileNameParts[fileNameParts.length - 1]
       }`.toLowerCase();
 
       if (allowedExtensions.includes(fileExtension)) {
-        setSelectedFile(fileName);
-        fileHistory.splice(0, 0, fileName);
+        fileHistory.unshift({
+          name: fileName,
+          red: `${fileName}'s red content`,
+          orange: `${fileName}'s orange content`,
+          green: `${fileName}'s green content`,
+        });
         localStorage.setItem("fileHistory", JSON.stringify(fileHistory));
-        navigate("analyze", { state: { selectedFile: fileName } });
+        navigate("analyze", { state: { selectedFile: file } });
       } else {
         alert("Only pdf files are allowed!");
       }
@@ -63,7 +74,11 @@ const Home = () => {
               </p>
             </>
           ) : (
-            <>
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleFileDrop}
+              className="flex justify-center items-center flex-col"
+            >
               <FaPlus style={{ color: "#6112e3", fontSize: "1.5rem" }} />
               <input
                 type="file"
@@ -74,7 +89,7 @@ const Home = () => {
               <p className="text-center font-bold mt-3 text-[#6b21e5]">
                 Click to upload your .pdf <br /> or drag and drop
               </p>
-            </>
+            </div>
           )}
         </motion.div>
         <div className="img max-w-[370px]">
